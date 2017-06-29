@@ -2,5 +2,5 @@
 #define FCOMPARE_H
 #include <stdio.h>
 #include "itype.h"
-i8 fcomp(FILE *a, FILE *b);
+int fcomp(FILE *a, FILE *b);
 #endif 
