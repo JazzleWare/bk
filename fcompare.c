@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "itype.h"
 #include "fcompare.h"
+#include <string.h>
 #define BUF_LEN (512*512)
 
 int fcomp(FILE *a, FILE *b) {

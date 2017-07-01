@@ -1,0 +1,2 @@
+#!/bin/bash
+gcc bakp.c fcompare.c hash.c mdirs.c -lcrypto -obakp
