@@ -3,6 +3,11 @@
 #include "fcompare.h"
 
 #include "mdirs.h"
+#include "list.h"
+
+void iterFun(void *ctx, const char *nPath) {
+  printf("got [%s]", nPath );
+}
 
 int main(int argc, char *argv[]) {
   char buf[1000] = {0};
@@ -18,5 +23,10 @@ int main(int argc, char *argv[]) {
   printf("md [%s]\n", argv[3]);
   int m = md(argv[3]);
   printf("retv: [%i]\n", m);
+  struct iter it;
+  it.it = iterFun;
+  it.ctx = NULL;
+  iterPath(argv[4], &it);
+
   return 0;
 }

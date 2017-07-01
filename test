@@ -3,5 +3,5 @@ A="a/b/e/l"
 if [ -n "$1" ]; then
   A="$1";
 fi
-echo "using [$1]";
- ./bakp hash.c hash.h "$A"
+echo "using [$A]";
+ ./bakp hash.c hash.h "$A" ~
