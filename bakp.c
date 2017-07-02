@@ -6,7 +6,8 @@
 #include "list.h"
 
 void iterFun(void *ctx, const char *nPath) {
-  printf("got [%s]", nPath );
+  ++*(long long *) ctx;
+  if (0)  printf("got [%s]\n", nPath );
 }
 
 int main(int argc, char *argv[]) {
@@ -25,8 +26,12 @@ int main(int argc, char *argv[]) {
   printf("retv: [%i]\n", m);
   struct iter it;
   it.it = iterFun;
-  it.ctx = NULL;
+
+  long long n = 0;
+  it.ctx = (void *) &n;
   iterPath(argv[4], &it);
+
+  printf("n [%lld]", n);
 
   return 0;
 }
