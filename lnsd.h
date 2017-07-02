@@ -28,14 +28,12 @@ int lnsd(const char *src, const char *dest, int isNewLn) {
   int l = (int) ddepth(dest);
   assert(l > 0);
 
-  if (isNewLn) {
-    char *u = (char *) pathu(l);
-    char *t = join(u, src);
-    r = symlink(t, dest);
-    assert(r == 0);
-    free(u);
-    free(t);
-  }
+  char *u = (char *) pathu(l);
+  char *t = join(u, src);
+  r = symlink(t, dest);
+  assert(r == 0);
+  free(u);
+  free(t);
 
   return r;
 }
