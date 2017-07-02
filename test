@@ -30,8 +30,9 @@ echo "[$BASE] actually contains $(cat "$BASE")"; rm -i "$BASE"
 echo "--------------------"
 
 echo "$MV" > "$MV"
+
 echo "-l -> linking [$BASE] to [$MV]"; ./bakp -l "$MV" "$BASE"
-echo "[$BASE] actually contains $(cat "$BASE")"; rm -i "$BASE"
+echo "[$BASE] actually contains $(cat "$BASE")"; rm -i "$BASE" "$MV"
 
 echo "--------------------"
 
