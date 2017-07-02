@@ -5,6 +5,7 @@
 #include <unistd.h>
 
 #include <errno.h>
+#include <assert.h>
 
 int lnsd(const char *src, const char *dest) {
   struct stat s;
