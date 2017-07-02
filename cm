@@ -1,2 +1,5 @@
 #!/bin/bash
 gcc test.c fcompare.c hash.c mdirs.c -lcrypto -otest
+
+
+gcc -lcrypto b.c mdirs.c fcompare.c hash.c -ob

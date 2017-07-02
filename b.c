@@ -15,7 +15,7 @@
 #include "list.h"
 #include "join.h"
 
-char *hashPath(hash) {
+char *hashPath(const char *hash) {
   char head[] = { hash[0], hash[1], '/', '\0' };
   char *ht = join(head, hash+2);
   char *whole = join(".index", ht);
@@ -25,32 +25,45 @@ char *hashPath(hash) {
 
 void bk(void *ctx, const char *npath) {
   FILE *a = fopen(npath, ("rb"));
-  char hash[1000];
-  hash(a, (unsigned char *) hash, 999);
-  assert(strlen(hash) == 88);
-  char *hashp = hashPath(hash);
+  char hashBuf[1000];
+  hash(a, (unsigned char *) hashBuf, 999);
+  printf("hash [%s]; len [%i]\n", hashBuf, strlen(hashBuf));
+
+  assert(strlen(hashBuf) == 88);
+  char *hashp = hashPath(hashBuf);
   char *payload = join(hashp, "payload");
 
   struct stat s;
-  int r = lstat(npath, &s);
+  int r = lstat(hashp, &s);
 
+  int isNewLn = 0;
   if (r == -1) {
     assert(errno == ENOENT);
     md(hashp);
     fclose(a);
     mvon(npath, payload);
+    isNewLn = 1;
   } else {
-    assert(S_ISDIR(s.st_mode);
+    assert(S_ISDIR(s.st_mode));
     FILE *b = fopen(payload, ("rb"));
     fseek(a, 0, SEEK_SET);
     assert(fcomp(a,b) == 0);
     fclose(a);
     fclose(b);
+    unlink(npath);
   }
 
-  lnsd(payload, npath);
+  lnsd(payload, npath, isNewLn);
 
-  free(hashp); free(payload );
+  char *t = join(hashp, "inv");
+  FILE *inv = fopen(t, "a");
+  free(t);
+
+  fprintf(inv, "\n[%s]", npath);
+  fclose(inv);
+
+  free(hashp);
+  free(payload );
 }
 
 int main(int argc, char *argv[]) {

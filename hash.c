@@ -49,4 +49,6 @@ void hash(FILE *in, u8 *hashBuf, const len_t hashBufLen) {
       ins(out, BASE[b]);
     } else { ins(out, '='); }
   }
+
+  ins(out, '\0');
 }

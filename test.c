@@ -1,11 +1,15 @@
 #include <stdio.h>
+#include <stdlib.h>
+
+
 #include "hash.h"
+#include "lnsd.h"
 #include "fcompare.h"
 
-#include "mdirs.h"
-#include "lnsd.h"
 #include "list.h"
+#include "ddepth.h"
 #include "mvon.h"
+#include "mdirs.h"
 
 void iterFun(void *ctx, const char *nPath) {
   ++*(long long *) ctx;
@@ -25,7 +29,7 @@ int main(int argc, char *argv[]) {
     return mvon(argv[2], argv[3]);
 
   if (strcmp(argv[1], "-l") == 0)
-    return lnsd(argv[2], argv[3]);
+    return lnsd(argv[2], argv[3], 1);
 
   if (strcmp(argv[1], "-c") == 0) {
     FILE
@@ -39,7 +43,15 @@ int main(int argc, char *argv[]) {
     return r;
   }
 
-  if (strcmp(argv[1], ("-p")) == 0) { return md(argv[2]); }
+  if (strcmp(argv[1], ("-p")) == 0) {
+    printf("path [%s]\n", argv[2]);
+    int r = ddepth(argv[2]);
+    char *u = pathu(r);
+    printf("l [%i] [%s]\n", r, u);
+    free(u);
+
+    return md(argv[2]);
+  }
 
   if (strcmp(argv[1], "-i") == 0) {
     long long n = 0;

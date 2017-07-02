@@ -6,17 +6,36 @@
 
 #include <errno.h>
 #include <assert.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include "ddepth.h"
 
-int lnsd(const char *src, const char *dest) {
+int lnsd(const char *src, const char *dest, int isNewLn) {
+  printf("lnsd [%s] [%s]\n", dest, src);
   struct stat s;
   int r = lstat(src, &s);
+  if (r != 0)
+    printf("Error: [%s]", strerror(errno));
+
+  fflush(stdout);
   assert(r == 0);
 
   r = lstat(dest, &s);
-  assert(r == -1 && errno == ENOENT);
 
-  r = symlink(src, dest);
-  assert(r == 0);
+  if (isNewLn)
+    assert(r == -1 && errno == ENOENT);
+
+  int l = (int) ddepth(dest);
+  assert(l > 0);
+
+  if (isNewLn) {
+    char *u = (char *) pathu(l);
+    char *t = join(u, src);
+    r = symlink(t, dest);
+    assert(r == 0);
+    free(u);
+    free(t);
+  }
 
   return r;
 }
