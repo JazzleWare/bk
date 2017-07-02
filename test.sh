@@ -1,5 +1,5 @@
 #!/bin/bash
-
+ln -s test bakp
 A="a/b/e/l"
 
 if [ -n "$1" ]; then
