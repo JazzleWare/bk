@@ -15,7 +15,7 @@ int lnsd(const char *src, const char *dest, int isNewLn) {
   struct stat s;
   int r = lstat(src, &s);
   if (r != 0)
-    printf("Error: [%s]", strerror(errno));
+    errorf("Error: [%s]", strerror(errno));
 
   fflush(stdout);
   assert(r == 0);

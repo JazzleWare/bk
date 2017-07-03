@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <errno.h>
 
+#include "errorf.h"
 #include "mvon.h"
 #include "lnsd.h"
 #include "hash.h"
@@ -27,7 +28,7 @@ void bk(void *ctx, const char *npath) {
   FILE *a = fopen(npath, ("rb"));
   char hashBuf[1000];
   hash(a, (unsigned char *) hashBuf, 999);
-  printf("hash [%s]; len [%i]\n", hashBuf, strlen(hashBuf));
+  errorf("hash [%s]; len [%i]\n", hashBuf, strlen(hashBuf));
 
   assert(strlen(hashBuf) == 88);
   char *hashp = hashPath(hashBuf);

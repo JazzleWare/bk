@@ -28,8 +28,11 @@ void iterPath(const char *nPath, struct iter *it) {
     assert(lstat(path, &s) == 0);
     if (S_ISDIR(s.st_mode))
       iterPath(path, it);
-    else if (S_ISREG(s.st_mode))
+    else if (S_ISREG(s.st_mode)) {
+      if (S_ISLNK(s.st_mode))
+        errorf("---------------------------------[%s]---------------------------", nPath );
       it->it(it->ctx, path);
+    }
 
     free(path);
   }

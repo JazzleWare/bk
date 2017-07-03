@@ -1,19 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define HAS_ERRORF
+#include "errorf.h"
 
 #include "hash.h"
 #include "lnsd.h"
 #include "fcompare.h"
 
+#include "mdirs.h"
+#include "mvon.h"
 #include "list.h"
 #include "ddepth.h"
-#include "mvon.h"
-#include "mdirs.h"
 
 void iterFun(void *ctx, const char *nPath) {
-  ++*(long long *) ctx;
-  printf("got [%s]\n", nPath );
+//++*(long long *) ctx;
+//printf("got [%s]\n", nPath );
 }
 
 // -m [from] [to] -> mvon(from, to)
