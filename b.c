@@ -80,7 +80,7 @@ void bk(struct iter *it, const char *npath, struct stat *s) {
     fclose(b);
     unlink(npath);
     br->reg_existing.num++;
-    br->reg_existing.sz++;
+    br->reg_existing.sz += s->st_size ;
   }
 
   lnsd(payload, npath, isNewLn);
