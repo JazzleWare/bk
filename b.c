@@ -17,10 +17,14 @@
 #include "join.h"
 
 struct bkreport {
+  long long ndirs;
   long long total;
-
-  long long existing;
-  long long fresh;
+  long long lns;
+  long long sz;
+  struct {
+    long long num;
+    long long sz;
+  } reg_new, reg_existing, reg_total;
 };
 
 char *hashPath(const char *hash) {
@@ -31,7 +35,21 @@ char *hashPath(const char *hash) {
   return whole;
 }
 
-void bk(void *ctx, const char *npath) {
+void bk(struct iter *it, const char *npath, struct stat *s) { 
+  struct bkreport *br = (struct bkreport *) it->ctx;
+  br->total++; br->sz += s->st_size;
+  if (S_ISDIR(s->st_mode)) {
+    br-> ndirs++;
+    iterPath(npath, it);
+    return;
+  }
+  if (!S_ISREG(s->st_mode)) {
+    if (S_ISLNK(s->st_mode))
+      br-> lns++;
+  return;
+  }
+
+
   FILE *a = fopen(npath, ("rb"));
   char hashBuf[1000];
   hash(a, (unsigned char *) hashBuf, 999);
@@ -41,10 +59,8 @@ void bk(void *ctx, const char *npath) {
   char *hashp = hashPath(hashBuf);
   char *payload = join(hashp, "payload");
 
-  struct stat s;
-  int r = lstat(hashp, &s);
-
-  struct bkreport *br = (struct bkreport *) ctx;
+  struct stat st;
+  int r = lstat(hashp, &st);
 
   int isNewLn = 0;
   if (r == -1) {
@@ -53,16 +69,18 @@ void bk(void *ctx, const char *npath) {
     fclose(a);
     mvon(npath, payload);
     isNewLn = 1;
-    br->fresh++;
+    br->reg_new.num++;
+    br->reg_new.sz += s->st_size ;
   } else {
-    assert(S_ISDIR(s.st_mode));
+    assert(S_ISDIR(st.st_mode));
     FILE *b = fopen(payload, ("rb"));
     fseek(a, 0, SEEK_SET);
     assert(fcomp(a,b) == 0);
     fclose(a);
     fclose(b);
     unlink(npath);
-    br->existing++;
+    br->reg_existing.num++;
+    br->reg_existing.sz++;
   }
 
   lnsd(payload, npath, isNewLn);
@@ -71,19 +89,30 @@ void bk(void *ctx, const char *npath) {
   FILE *inv = fopen(t, "a");
   free(t);
 
+  br->reg_total.num++;
+  br->reg_total.sz += s->st_size ;
+
   fprintf(inv, "\n[%s]", npath);
   fclose(inv);
 
   free(hashp);
   free(payload );
-
-  br->total++;
 }
 
 int main(int argc, char *argv[]) {
-  struct bkreport br = { 0, 0, 0 };
+  struct bkreport br = {0};
+  memset(&br, 0, sizeof(br));
   struct iter it = { bk, &br };
   iterPath(argv[1], &it);
-  printf("\nEXISTING [%lld]\nFRESH  [%lld]\nTOTAL [%lld]\n", br.existing, br.fresh, br.total);
+
+
+  printf("DIRS [%lld]\n", br.ndirs);
+  printf("LNKS [%lld]\n", br.lns);
+  printf("REGS [%lld] (%lld bytes)\n", br.reg_total.num, br.reg_total.sz );
+  printf("  EXISTING [%lld] (%lld bytes)\n", br.reg_existing.num, br.reg_existing.sz );
+  printf("  FRESH    [%lld] (%lld bytes)\n", br.reg_new.num, br.reg_new.sz );
+  printf("------------------------------\n");
+  printf("TOTAL [%lld] in [%lld] bytes\n", br.total, br.sz );
+
   return 0;
 }

@@ -13,9 +13,12 @@
 #include "list.h"
 #include "ddepth.h"
 
-void iterFun(void *ctx, const char *nPath) {
-// ++*(long long *) ctx;
-// printf("got [%s]\n", nPath );
+void iterFun(struct iter *it, const char *nPath, struct stat *s) {
+  if (S_ISREG(s->st_mode)) {
+    ++*(long long *) it->ctx;
+    printf("got [%s]\n", nPath );
+  } else if (S_ISDIR(s->st_mode))
+    iterPath(nPath, it);
 }
 
 // -m [from] [to] -> mvon(from, to)
