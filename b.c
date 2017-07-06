@@ -16,6 +16,13 @@
 #include "list.h"
 #include "join.h"
 
+struct bkreport {
+  long long total;
+
+  long long existing;
+  long long fresh;
+};
+
 char *hashPath(const char *hash) {
   char head[] = { hash[0], hash[1], '/', '\0' };
   char *ht = join(head, hash+2);
@@ -37,6 +44,8 @@ void bk(void *ctx, const char *npath) {
   struct stat s;
   int r = lstat(hashp, &s);
 
+  struct bkreport *br = (struct bkreport *) ctx;
+
   int isNewLn = 0;
   if (r == -1) {
     assert(errno == ENOENT);
@@ -44,6 +53,7 @@ void bk(void *ctx, const char *npath) {
     fclose(a);
     mvon(npath, payload);
     isNewLn = 1;
+    br->fresh++;
   } else {
     assert(S_ISDIR(s.st_mode));
     FILE *b = fopen(payload, ("rb"));
@@ -52,6 +62,7 @@ void bk(void *ctx, const char *npath) {
     fclose(a);
     fclose(b);
     unlink(npath);
+    br->existing++;
   }
 
   lnsd(payload, npath, isNewLn);
@@ -65,10 +76,14 @@ void bk(void *ctx, const char *npath) {
 
   free(hashp);
   free(payload );
+
+  br->total++;
 }
 
 int main(int argc, char *argv[]) {
-  struct iter it = { bk, NULL };
+  struct bkreport br = { 0, 0, 0 };
+  struct iter it = { bk, &br };
   iterPath(argv[1], &it);
+  printf("\nEXISTING [%lld]\nFRESH  [%lld]\nTOTAL [%lld]\n", br.existing, br.fresh, br.total);
   return 0;
 }

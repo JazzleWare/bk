@@ -36,7 +36,7 @@ echo "[$BASE] actually contains $(cat "$BASE")"; rm -i "$BASE" "$MV"
 
 echo "--------------------"
 
-echo "-c -> comparing [hash.c] to [hash.h]"; ./bakp -c hash.c hash.h
+echo "-c -> comparing [fcompare.h] to [hash.h]"; ./bakp -c fcompare.h hash.h
 
 echo "--------------------"
 
@@ -48,7 +48,7 @@ echo "-i -> iterating [.]"; ./bakp -i "."
 
 echo "--------------------"
 
-echo "-h -> hashing [hash.c]"; ./bakp -h hash.c
+echo "-h -> hashing [hash.h]"; ./bakp -h hash.h
 
 echo "--------------------"
 

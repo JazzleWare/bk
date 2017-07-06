@@ -8,7 +8,8 @@
 #include <dirent.h>
 #include "join.h"
 
- typedef void (*iterFn)(void *ctx, const char *nPath);
+struct iter;
+ typedef void (*iterFn)(struct iter *iter, const char *nPath, struct stat *s);
 
 struct iter {
   iterFn it;

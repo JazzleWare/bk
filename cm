@@ -1,5 +1,5 @@
 #!/bin/bash
-gcc test.c fcompare.c hash.c mdirs.c -lcrypto -otest
+gcc test.c -lcrypto -otest
 
 
-gcc -lcrypto b.c mdirs.c fcompare.c hash.c -ob
+gcc -lcrypto b.c -ob

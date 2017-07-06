@@ -14,8 +14,8 @@
 #include "ddepth.h"
 
 void iterFun(void *ctx, const char *nPath) {
-//++*(long long *) ctx;
-//printf("got [%s]\n", nPath );
+// ++*(long long *) ctx;
+// printf("got [%s]\n", nPath );
 }
 
 // -m [from] [to] -> mvon(from, to)

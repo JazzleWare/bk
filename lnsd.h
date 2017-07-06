@@ -11,13 +11,12 @@
 #include "ddepth.h"
 
 int lnsd(const char *src, const char *dest, int isNewLn) {
-  printf("lnsd [%s] [%s]\n", dest, src);
+  errorf("lnsd [%s] [%s]\n", dest, src);
   struct stat s;
   int r = lstat(src, &s);
   if (r != 0)
     errorf("Error: [%s]", strerror(errno));
 
-  fflush(stdout);
   assert(r == 0);
 
   r = lstat(dest, &s);

@@ -10,7 +10,6 @@
 #include <errno.h>
 #include <assert.h>
 
-#include "mdirs.h"
 #include "itype.h"
 
 static char *tailOf(char *nPath) {
@@ -56,4 +55,5 @@ int md(char *nPath) {
     errorf("md [%s]\n", strerror(errno));
 
   return r;
-}#endif 
+}
+#endif 
