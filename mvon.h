@@ -23,14 +23,16 @@ int mvon(const char *o, const char *n) {
 }
 
 #define BUFLEN (512*512)
-int cpsd(FILE *in, char *o) {
+int cpsd(FILE *in, char *o, const char *linkContents) {
   FILE *out = fopen(o, "wb");
   fseek(in, 0, SEEK_SET);
   char b[BUFLEN];
   while (1) {
-    int len = fread(b, 1, BUFLEN, in);
-    if (len <= 0) break;
-    fwrite(b, 1, len, out);
+    int len = in ? fread(b, 1, BUFLEN, in) : strlen(linkContents);
+    if (len <= 0 && linkContents == NULL) break;
+    fwrite(in ? b : linkContents, 1, len, out);
+    if (linkContents)
+      break;
   }
   fclose(out);
   return 0;

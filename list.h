@@ -21,6 +21,7 @@ struct bkreport {
     long long sz;
   } reg_new, reg_existing, reg_total;
   int cp_if_new;
+  const char *name;
 };
 
 struct iter {

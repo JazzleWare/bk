@@ -33,20 +33,28 @@ void bk(struct iter *it, const char *npath, struct stat *s) {
     iterPath(npath, it);
     return;
   }
+
+  char *linkContents = NULL;
   if (!S_ISREG(s->st_mode)) {
     if (S_ISLNK(s->st_mode)) {
       printf("LNK [%s]\n", npath );
       br-> lns++;
-    } else
+      if (!br->cp_if_new)
+        return;
+      linkContents = (char*) malloc(s->st_size+1);
+      readlink(npath, linkContents, s->st_size);
+      linkContents[s->st_size] = '\0';
+    } else {
       printf("OTH [%s]\n", npath );
-  return;
+      return;
+    }
   }
 
-  printf("REG [%s]\n", npath );
+  printf("%s [%s]\n", linkContents == NULL ? "REG" : "LNK", npath );
 
-  FILE *a = fopen(npath, ("rb"));
+  FILE *a = linkContents ? NULL : fopen(npath, ("rb"));
   char hashBuf[1000];
-  hash(a, (unsigned char *) hashBuf, 999);
+  hash(a, (unsigned char *) hashBuf, 999, linkContents);
   errorf("hash [%s]; len [%i]\n", hashBuf, strlen(hashBuf));
 
   assert(strlen(hashBuf) == 88);
@@ -67,14 +75,17 @@ void bk(struct iter *it, const char *npath, struct stat *s) {
       memcpy(temp, payload, payloadNameLen);
       memcpy(&temp[payloadNameLen], tail, strlen(tail));
       temp[payloadNameLen+strlen(tail)] = '\0';
-      cpsd(a, temp );
+      cpsd(a, temp, linkContents);
       mvon(temp, payload);
       free(temp );
-      fclose(a);    
+      if (linkContents == NULL)
+        fclose(a);    
     }
     else {
-      fclose(a);    
-      mvon(npath, payload);
+      if (linkContents == NULL) {
+        fclose(a);    
+        mvon(npath, payload);
+      }
     }
     isNewLn = 1;
     br->reg_new.num++;
@@ -82,16 +93,22 @@ void bk(struct iter *it, const char *npath, struct stat *s) {
   } else {
     assert(S_ISDIR(st.st_mode));
     FILE *b = fopen(payload, ("rb"));
-    fseek(a, 0, SEEK_SET);
-    assert(fcomp(a,b) == 0);
-    fclose(a);
+    if (linkContents == NULL) fseek(a, 0, SEEK_SET);
+    assert(fcomp(a,b,linkContents) == 0);
+    if (linkContents == NULL) fclose(a);
     fclose(b);
-    if (!br->cp_if_new) unlink(npath);
+    if (!br->cp_if_new) {
+      assert(linkContents == NULL);
+      unlink(npath);
+    }
     br->reg_existing.num++;
     br->reg_existing.sz += s->st_size ;
   }
 
-  if (!br->cp_if_new) lnsd(payload, npath, isNewLn);
+  if (!br->cp_if_new) {
+    assert(linkContents == NULL);
+    lnsd(payload, npath, isNewLn);
+  }
 
   char *t = join(hashp, "inv");
   FILE *inv = fopen(t, "a");
@@ -100,7 +117,8 @@ void bk(struct iter *it, const char *npath, struct stat *s) {
   br->reg_total.num++;
   br->reg_total.sz += s->st_size ;
 
-  fprintf(inv, "\n[%s]", npath);
+  fprintf(inv, "\n[%s]:[%s][%s]", br->name, npath, linkContents == NULL ? "REG" : "LNK");
+  if (linkContents) free(linkContents);
   fclose(inv);
 
   free(hashp);
@@ -123,6 +141,9 @@ int main(int argc, char *argv[]) {
   if (i >= argc) { printf("insuficient arguments.\n"); return 2; }
 
   struct iter it = { bk, &br };
+  if (i + 1 >= argc) { printf("session name was expected but got none.\n"); return 12; }
+  br.name = argv[i+1];
+
   iterPath(argv[i], &it);
 
 

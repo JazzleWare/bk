@@ -6,11 +6,11 @@
 
 #define BUF_LEN (512*512)
 
-int fcomp(FILE *a, FILE *b) {
+int fcomp(FILE *a, FILE *b, const char *linkContents) {
   u8 buf_a[BUF_LEN], buf_b[BUF_LEN];
   len_t len_a = 0, len_b = 0;
   while (1) {
-    len_a = fread(buf_a, 1, BUF_LEN, a);
+    len_a = a ? fread(buf_a, 1, BUF_LEN, a) : strlen(linkContents);
     len_b = fread(buf_b, 1, BUF_LEN, b);
     if (len_a != len_b)
       return len_a - len_b;
@@ -19,6 +19,8 @@ int fcomp(FILE *a, FILE *b) {
     int l = memcmp(buf_a, buf_b, len_a);
     if (l)
       return l;
+    if (linkContents)
+      break;
   }
   return 0;
 }

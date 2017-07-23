@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
     FILE
       *a = fopen(argv[2], ("rb")),
       *b = fopen(argv[3], ("rb"));
-    int r = fcomp(a,b);
+    int r = fcomp(a,b,NULL);
     fclose(a);
     fclose(b);
 
@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
   if (strcmp(argv[1], "-h") == 0) {
     char buf[1000] = {0};
     FILE *a = fopen(argv[2], ("rb"));
-    hash(a, (u8 *)buf, 1000);
+    hash(a, (u8 *)buf, 1000, NULL);
     printf("%s %s\n", buf, argv[1]);
     fclose(a);
     return 0;

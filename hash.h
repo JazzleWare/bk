@@ -1,26 +1,30 @@
 #ifndef HASH_H
 #define HASH_H
 #include <stdio.h>
-#include <openssl/sha.h>
-#include <assert.h>
 
+#include <openssl/sha.h>
+
+#include <string.h>
+#include <assert.h>
 #include "itype.h"
 #define BUF_LEN (512*512)
 
 static char BASE[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+";
 
 #define ins(buf, b) do { assert((buf) != BUF_LAST); *(buf)++ = (b); } while (0);
-void hash(FILE *in, u8 *hashBuf, const len_t hashBufLen) {
+void hash(FILE *in, u8 *hashBuf, const len_t hashBufLen, const char *linkContents) {
   SHA512_CTX ctx;
   SHA512_Init(&ctx);
 
   u8 buf[BUF_LEN];
 
   while (1) {
-    int len = fread(buf, 1, BUF_LEN, in);
-    if (len <= 0)
+    int len = in ? fread(buf, 1, BUF_LEN, in) : strlen(linkContents);
+    if (len <= 0 && linkContents == NULL)
       break;
     SHA512_Update(&ctx, buf, len);
+    if (linkContents)
+      break;
   }
 
   unsigned char m[SHA512_DIGEST_LENGTH];
