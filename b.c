@@ -16,17 +16,6 @@
 #include "list.h"
 #include "join.h"
 
-struct bkreport {
-  long long ndirs;
-  long long total;
-  long long lns;
-  long long sz;
-  struct {
-    long long num;
-    long long sz;
-  } reg_new, reg_existing, reg_total;
-};
-
 char *hashPath(const char *hash) {
   char head[] = { hash[0], hash[1], '/', '\0' };
   char *ht = join(head, hash+2);
@@ -40,15 +29,20 @@ void bk(struct iter *it, const char *npath, struct stat *s) {
   br->total++; br->sz += s->st_size;
   if (S_ISDIR(s->st_mode)) {
     br-> ndirs++;
+    printf("DIR [%s]\n", npath);
     iterPath(npath, it);
     return;
   }
   if (!S_ISREG(s->st_mode)) {
-    if (S_ISLNK(s->st_mode))
+    if (S_ISLNK(s->st_mode)) {
+      printf("LNK [%s]\n", npath );
       br-> lns++;
+    } else
+      printf("OTH [%s]\n", npath );
   return;
   }
 
+  printf("REG [%s]\n", npath );
 
   FILE *a = fopen(npath, ("rb"));
   char hashBuf[1000];
@@ -66,8 +60,22 @@ void bk(struct iter *it, const char *npath, struct stat *s) {
   if (r == -1) {
     assert(errno == ENOENT);
     md(hashp);
-    fclose(a);
-    mvon(npath, payload);
+    if (br->cp_if_new) {
+      int payloadNameLen = strlen(payload);
+      char *tail = ".temp";
+      char *temp = (char *) malloc(payloadNameLen+strlen(tail)+1);
+      memcpy(temp, payload, payloadNameLen);
+      memcpy(&temp[payloadNameLen], tail, strlen(tail));
+      temp[payloadNameLen+strlen(tail)] = '\0';
+      cpsd(a, temp );
+      mvon(temp, payload);
+      free(temp );
+      fclose(a);    
+    }
+    else {
+      fclose(a);    
+      mvon(npath, payload);
+    }
     isNewLn = 1;
     br->reg_new.num++;
     br->reg_new.sz += s->st_size ;
@@ -78,12 +86,12 @@ void bk(struct iter *it, const char *npath, struct stat *s) {
     assert(fcomp(a,b) == 0);
     fclose(a);
     fclose(b);
-    unlink(npath);
+    if (!br->cp_if_new) unlink(npath);
     br->reg_existing.num++;
     br->reg_existing.sz += s->st_size ;
   }
 
-  lnsd(payload, npath, isNewLn);
+  if (!br->cp_if_new) lnsd(payload, npath, isNewLn);
 
   char *t = join(hashp, "inv");
   FILE *inv = fopen(t, "a");
@@ -102,8 +110,20 @@ void bk(struct iter *it, const char *npath, struct stat *s) {
 int main(int argc, char *argv[]) {
   struct bkreport br = {0};
   memset(&br, 0, sizeof(br));
+  int i = 1;
+  if (i >= argc) { printf("insufficient arguments.\n"); return 1; }
+  const char *arg = argv[i];
+  if (strcmp(arg, "--") == 0)
+    i++;
+  else if (strcmp(arg, "-c") == 0) {
+    i++;
+    br.cp_if_new = 1;
+  }
+
+  if (i >= argc) { printf("insuficient arguments.\n"); return 2; }
+
   struct iter it = { bk, &br };
-  iterPath(argv[1], &it);
+  iterPath(argv[i], &it);
 
 
   printf("DIRS [%lld]\n", br.ndirs);

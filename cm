@@ -2,4 +2,4 @@
 gcc test.c -lcrypto -otest
 
 
-gcc -lcrypto b.c -ob
+gcc -lcrypto b.c -oe

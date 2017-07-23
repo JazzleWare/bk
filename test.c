@@ -14,11 +14,23 @@
 #include "ddepth.h"
 
 void iterFun(struct iter *it, const char *nPath, struct stat *s) {
-  if (S_ISREG(s->st_mode)) {
-    ++*(long long *) it->ctx;
-    printf("got [%s]\n", nPath );
-  } else if (S_ISDIR(s->st_mode))
+  struct bkreport *br = (struct bkreport *) it->ctx;
+  br->total++; br->sz += s->st_size;
+  if (S_ISDIR(s->st_mode)) {
+    br-> ndirs++;
+    printf("iter [%i]", br-> ndirs );
     iterPath(nPath, it);
+  }
+  else {
+    if (!S_ISREG(s->st_mode)) {
+      if (S_ISLNK(s->st_mode))
+        br-> lns++;
+    } else {
+      br->reg_total.num++;
+      br->reg_total.sz += s->st_size ;
+    }
+    printf("[%s]\n", nPath);
+  }
 }
 
 // -m [from] [to] -> mvon(from, to)
@@ -59,10 +71,19 @@ int main(int argc, char *argv[]) {
   }
 
   if (strcmp(argv[1], "-i") == 0) {
-    long long n = 0;
-    struct iter it = { iterFun, (void *) &n };
+    struct bkreport br;
+    memset(&br, 0, sizeof(br));
+    struct iter it = { iterFun, (void *) &br };
     iterPath(argv[2], &it);
-    printf("num [%lld]\n", n);
+
+    printf("DIRS [%lld]\n", br.ndirs);
+    printf("LNKS [%lld]\n", br.lns);
+    printf("REGS [%lld] (%lld bytes)\n", br.reg_total.num, br.reg_total.sz );
+    printf("  EXISTING [%lld] (%lld bytes)\n", br.reg_existing.num, br.reg_existing.sz );
+    printf("  FRESH    [%lld] (%lld bytes)\n", br.reg_new.num, br.reg_new.sz );
+    printf("------------------------------\n");
+    printf("TOTAL [%lld] in [%lld] bytes\n", br.total, br.sz );
+
     return 0;
   }
 

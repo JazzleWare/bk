@@ -11,6 +11,18 @@
 struct iter;
  typedef void (*iterFn)(struct iter *iter, const char *nPath, struct stat *s);
 
+struct bkreport {
+  long long ndirs;
+  long long total;
+  long long lns;
+  long long sz;
+  struct {
+    long long num;
+    long long sz;
+  } reg_new, reg_existing, reg_total;
+  int cp_if_new;
+};
+
 struct iter {
   iterFn it;
   void *ctx;
