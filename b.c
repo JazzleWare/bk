@@ -44,13 +44,16 @@ void bk(struct iter *it, const char *npath, struct stat *s) {
       linkContents = (char*) malloc(s->st_size+1);
       readlink(npath, linkContents, s->st_size);
       linkContents[s->st_size] = '\0';
+      errorf("lnLEN [%i]\n", s->st_size);
+      errorf("lnSTR [%s:%i]\n", linkContents, strlen(linkContents));
     } else {
       printf("OTH [%s]\n", npath );
       return;
     }
   }
 
-  printf("%s [%s]\n", linkContents == NULL ? "REG" : "LNK", npath );
+  printf("%s [%s]\n", linkContents == NULL ? "REG" : "USED-LNK", npath );
+  errorf("linkContents [%s]\n", linkContents == NULL ? ":NONE" : linkContents);
 
   FILE *a = linkContents ? NULL : fopen(npath, ("rb"));
   char hashBuf[1000];
@@ -67,6 +70,7 @@ void bk(struct iter *it, const char *npath, struct stat *s) {
   int isNewLn = 0;
   if (r == -1) {
     assert(errno == ENOENT);
+    errorf("***********FRESH***********\n");
     md(hashp);
     if (br->cp_if_new) {
       int payloadNameLen = strlen(payload);
@@ -76,10 +80,11 @@ void bk(struct iter *it, const char *npath, struct stat *s) {
       memcpy(&temp[payloadNameLen], tail, strlen(tail));
       temp[payloadNameLen+strlen(tail)] = '\0';
       cpsd(a, temp, linkContents);
+      errorf("CPSD [%s] [ln:%s]\n", temp, linkContents == NULL ? ":NONE" : linkContents);
       mvon(temp, payload);
       free(temp );
       if (linkContents == NULL)
-        fclose(a);    
+        fclose(a);
     }
     else {
       if (linkContents == NULL) {

@@ -12,7 +12,7 @@
 static char BASE[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+";
 
 #define ins(buf, b) do { assert((buf) != BUF_LAST); *(buf)++ = (b); } while (0);
-void hash(FILE *in, u8 *hashBuf, const len_t hashBufLen, const char *linkContents) {
+void hash(FILE *in, u8 *hashBuf, const len_t hashBufLen, char *linkContents) {
   SHA512_CTX ctx;
   SHA512_Init(&ctx);
 
@@ -22,7 +22,7 @@ void hash(FILE *in, u8 *hashBuf, const len_t hashBufLen, const char *linkContent
     int len = in ? fread(buf, 1, BUF_LEN, in) : strlen(linkContents);
     if (len <= 0 && linkContents == NULL)
       break;
-    SHA512_Update(&ctx, buf, len);
+    SHA512_Update(&ctx, in ? buf : (u8 *)linkContents, len);
     if (linkContents)
       break;
   }
